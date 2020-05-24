@@ -1,7 +1,6 @@
 from __future__ import division
 
 import numpy as np
-
 import torch
 import torch.nn as nn
 
@@ -39,9 +38,11 @@ class RoIPooling(nn.Module):
 
     def forward(self, features, landmarks):
         """batch-wise RoI pooling.
+
         Args:
-            features(tensor): the feature maps to be pooled
-            landmarks(tensor): crop the region of interest based on the landmarks(bs, self.num_lms)
+            features(tensor): the feature maps to be pooled.
+            landmarks(tensor): crop the region of interest based on the
+                landmarks(bs, self.num_lms).
         """
         batch_size = features.size(0)
 
@@ -52,13 +53,13 @@ class RoIPooling(nn.Module):
         ab = [np.array([[self.a, 0], [0, self.b]]) for _ in range(batch_size)]
         ab = np.stack(ab, axis=0)
         ab = torch.from_numpy(ab).float().cuda()
-        size = torch.Size((batch_size, features.size(1), self.roi_size,
-                           self.roi_size))
+        size = torch.Size(
+            (batch_size, features.size(1), self.roi_size, self.roi_size))
 
         pooled = []
-        for l in range(self.num_lms):
-            tx = -1 + 2 * landmarks[:, l, 0] / float(self.crop_size)
-            ty = -1 + 2 * landmarks[:, l, 1] / float(self.crop_size)
+        for i in range(self.num_lms):
+            tx = -1 + 2 * landmarks[:, i, 0] / float(self.crop_size)
+            ty = -1 + 2 * landmarks[:, i, 1] / float(self.crop_size)
             t_xy = torch.stack((tx, ty)).view(batch_size, 2, 1)
             theta = torch.cat((ab, t_xy), 2)
 

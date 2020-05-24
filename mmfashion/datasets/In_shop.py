@@ -1,33 +1,15 @@
-from functools import partial
+import os
+import random
 
-import shutil
-import time
-import logging
-
+import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.parallel
-import torch.backends.cudnn as cudnn
 import torch.optim
 import torch.utils.data
-from torch.utils.data.dataset import Dataset
 import torchvision.transforms as transforms
-import torchvision.datasets as datasets
-import torchvision.models as models
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
-
-from mmcv.runner import get_dist_info
-from mmcv.parallel import collate
-
-import os
-import sys
-import random
-from skimage import io
 from PIL import Image
-import numpy as np
+from torch.utils.data.dataset import Dataset
 
-from .loader import GroupSampler, DistributedGroupSampler, DistributedSampler
 from .registry import DATASETS
 
 
@@ -45,8 +27,7 @@ class InShopDataset(Dataset):
                  img_size,
                  roi_plane_size=7,
                  retrieve=False,
-                 find_three=False,
-                 idx2id=None):
+                 find_three=False):
         self.img_path = img_path
 
         normalize = transforms.Normalize(
@@ -110,11 +91,7 @@ class InShopDataset(Dataset):
             y1 = max(0, int(bbox_cor[1]) - 20)
             x2 = int(bbox_cor[2]) + 20
             y2 = int(bbox_cor[3]) + 20
-            bbox_w = x2 - x1
-            bbox_h = y2 - y1
             img = img.crop(box=(x1, y1, x2, y2))
-        else:
-            bbox_w, bbox_h = self.img_size[0], self.img_size[1]
 
         img.thumbnail(self.img_size, Image.ANTIALIAS)
         img = img.convert('RGB')
@@ -142,7 +119,6 @@ class InShopDataset(Dataset):
     def get_three_items(self, idx):
         """return anchor, positive and negative
         """
-        anchor_img = self.img_list[idx]
         anchor_data = self.get_basic_item(idx)
         anchor_id = self.ids[idx]
 

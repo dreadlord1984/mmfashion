@@ -8,7 +8,7 @@ img_size = (224, 224)
 
 model = dict(
     type='GlobalPredictor',
-    backbone=dict(type='ResNet'),
+    backbone=dict(type='ResNet', setting='resnet50'),
     global_pool=dict(
         type='GlobalPooling',
         inplanes=(7, 7),
@@ -42,7 +42,7 @@ data = dict(
         label_file=os.path.join(data_root, 'Anno/train_attr.txt'),
         cate_file=os.path.join(data_root, 'Anno/train_cate.txt'),
         bbox_file=os.path.join(data_root, 'Anno/train_bbox.txt'),
-        landmark_file=os.path.join(data_root, 'Anno/train_landmarks.txt'),
+        landmark_file=None,
         img_size=img_size),
     test=dict(
         type=dataset_type,
@@ -51,7 +51,8 @@ data = dict(
         label_file=os.path.join(data_root, 'Anno/test_attr.txt'),
         cate_file=os.path.join(data_root, 'Anno/test_cate.txt'),
         bbox_file=os.path.join(data_root, 'Anno/test_bbox.txt'),
-        landmark_file=os.path.join(data_root, 'Anno/test_landmarks.txt'),
+        landmark_file=None,
+        attr_cloth_file=os.path.join(data_root, 'Anno/list_attr_cloth.txt'),
         img_size=img_size),
     val=dict(
         type=dataset_type,
@@ -60,7 +61,7 @@ data = dict(
         label_file=os.path.join(data_root, 'Anno/val_attr.txt'),
         cate_file=os.path.join(data_root, 'Anno/val_cate.txt'),
         bbox_file=os.path.join(data_root, 'Anno/val_bbox.txt'),
-        landmark_file=os.path.join(data_root, 'Anno/val_landmarks.txt'),
+        landmark_file=None,
         img_size=img_size))
 
 # optimizer

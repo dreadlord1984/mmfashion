@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from ..builder import build_loss
 from ..registry import ATTRPREDICTOR
@@ -29,7 +28,7 @@ class AttrPredictor(nn.Module):
         return loss_attr
 
     def forward_test(self, x):
-        attr_pred = self.linear_attr(x)
+        attr_pred = torch.sigmoid(self.linear_attr(x))
         return attr_pred
 
     def forward(self, x, attr=None, return_loss=False):

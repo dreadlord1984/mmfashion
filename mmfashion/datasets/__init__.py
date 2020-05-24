@@ -1,13 +1,16 @@
-from .In_shop import InShopDataset
 from .Attr_Pred import AttrDataset
-from .Landmark_Detect import LandmarkDetectDataset
-from .utils import to_tensor, get_dataset
-from .loader import GroupSampler, DistributedGroupSampler, build_dataloader
 from .builder import build_dataset
+from .Consumer_to_shop import ConsumerToShopDataset
 from .dataset_wrappers import ConcatDataset
+from .In_shop import InShopDataset
+from .Landmark_Detect import LandmarkDetectDataset
+from .loader import DistributedGroupSampler, GroupSampler, build_dataloader
+from .Polyvore_outfit import PolyvoreOutfitDataset
+from .utils import get_dataset, to_tensor
 
 __all__ = [
-    'InShopDataset', 'AttrDataset', 'LandmarkDetectDataset', 'to_tensor',
+    'InShopDataset', 'AttrDataset', 'ConsumerToShopDataset',
+    'PolyvoreOutfitDataset', 'LandmarkDetectDataset', 'to_tensor',
     'get_dataset', 'GroupSampler', 'DistributedGroupSampler',
     'build_dataloader', 'build_dataset', 'ConcatDataset'
 ]

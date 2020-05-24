@@ -8,7 +8,7 @@ img_size = (224, 224)
 
 model = dict(
     type='RoIPredictor',
-    backbone=dict(type='ResNet'),
+    backbone=dict(type='ResNet', setting='resnet50'),
     global_pool=dict(
         type='GlobalPooling',
         inplanes=(7, 7),
@@ -63,6 +63,7 @@ data = dict(
         cate_file=os.path.join(data_root, 'Anno/test_cate.txt'),
         bbox_file=os.path.join(data_root, 'Anno/test_bbox.txt'),
         landmark_file=os.path.join(data_root, 'Anno/test_landmarks.txt'),
+        attr_cloth_file=os.path.join(data_root, 'Anno/list_attr_cloth.txt'),
         img_size=img_size),
     val=dict(
         type=dataset_type,
@@ -98,7 +99,7 @@ gpus = dict(train=[0, 1, 2, 3], test=[0, 1])
 work_dir = 'checkpoint/Predict/resnet/roi'
 print_interval = 20  # interval to print information
 save_interval = 5
-init_weights_from = None  #'checkpoint/Predict/resnet/global/model_best.pth'
+init_weights_from = None  # 'checkpoint/Predict/resnet/global/model_best.pth'
 load_from = 'checkpoint/Predict/resnet/attr_pred/latest.pth'
 resume_from = None
 workflow = [('train', 40)]

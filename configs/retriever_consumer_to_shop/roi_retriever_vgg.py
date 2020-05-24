@@ -3,12 +3,12 @@ import os
 # model settings
 arch = 'vgg'
 retrieve = True
-attribute_num = 463
-id_num = 7982
+attribute_num = 303
+id_num = 33881
 img_size = (224, 224)
 model = dict(
     type='RoIRetriever',
-    backbone=dict(type='Vgg'),
+    backbone=dict(type='Vgg', layer_setting='vgg16'),
     global_pool=dict(
         type='GlobalPooling',
         inplanes=(7, 7),
@@ -30,60 +30,64 @@ model = dict(
         inter_channels=[256, id_num],
         loss_id=dict(type='CELoss', ratio=1),
         loss_triplet=dict(type='TripletLoss', method='cosine', margin=0.)),
-    attr_predictor=None,
+    attr_predictor=dict(
+        type='AttrPredictor',
+        inchannels=4096,
+        outchannels=attribute_num,
+        loss_attr=dict(
+            type='BCEWithLogitsLoss',
+            ratio=1,
+            weight=None,
+            size_average=None,
+            reduce=None,
+            reduction='mean'),
+    ),
     pretrained='checkpoint/vgg16.pth')
 
 pooling = 'RoI'
 
-# extract_feature or not
+# extract feature or not
 extract_feature = False
 
-# dataset settings
-dataset_type = 'InShopDataset'
-data_root = '../data/In-shop'
+# dataset setting
+dataset_type = 'ConsumerToShopDataset'
+data_root = 'data/Consumer_to_shop'
 img_norm = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 data = dict(
     imgs_per_gpu=8,
-    workers_per_gpu=4,
+    workers_per_gpu=2,
     train=dict(
         type=dataset_type,
         img_path=os.path.join(data_root, 'Img'),
-        img_file=os.path.join(data_root, 'Anno/train_img.txt'),
-        label_file=os.path.join(data_root, 'Anno/train_labels.txt'),
+        img_file=os.path.join(data_root, 'Anno/train_consumer2shop.txt'),
         id_file=os.path.join(data_root, 'Anno/train_id.txt'),
-        bbox_file=os.path.join(data_root, 'Anno/train_bbox.txt'),
-        landmark_file=os.path.join(data_root, 'Anno/train_landmarks.txt'),
+        label_file=os.path.join(data_root, 'Anno/list_attr_items.txt'),
+        bbox_file=os.path.join(data_root, 'Anno/list_bbox_train.txt'),
+        landmark_file=os.path.join(data_root, 'Anno/list_landmarks_train.txt'),
         img_size=img_size,
-        roi_plane_size=7,
-        retrieve=retrieve,
-        find_three=False),
+        find_three=True),
     query=dict(
         type=dataset_type,
         img_path=os.path.join(data_root, 'Img'),
-        img_file=os.path.join(data_root, 'Anno/query_img.txt'),
-        label_file=os.path.join(data_root, 'Anno/query_labels.txt'),
-        id_file=os.path.join(data_root, 'Anno/query_id.txt'),
-        bbox_file=os.path.join(data_root, 'Anno/query_bbox.txt'),
-        landmark_file=os.path.join(data_root, 'Anno/query_landmarks.txt'),
+        img_file=os.path.join(data_root, 'Anno/consumer.txt'),
+        id_file=os.path.join(data_root, 'Anno/consumer_id.txt'),
+        label_file=os.path.join(data_root, 'Anno/list_attr_items.txt'),
+        bbox_file=os.path.join(data_root, 'Anno/list_bbox_consumer.txt'),
+        landmark_file=os.path.join(data_root,
+                                   'Anno/list_landmarks_consumer.txt'),
         img_size=img_size,
-        roi_plane_size=7,
-        retrieve=retrieve,
-        find_three=False,
-        idx2id=os.path.join(data_root, 'Anno/query_idx2id.txt')),
+        find_three=True),
     gallery=dict(
         type=dataset_type,
         img_path=os.path.join(data_root, 'Img'),
-        img_file=os.path.join(data_root, 'Anno/gallery_img.txt'),
-        label_file=os.path.join(data_root, 'Anno/gallery_labels.txt'),
-        id_file=os.path.join(data_root, 'Anno/gallery_id.txt'),
-        bbox_file=os.path.join(data_root, 'Anno/gallery_bbox.txt'),
-        landmark_file=os.path.join(data_root, 'Anno/gallery_landmarks.txt'),
+        img_file=os.path.join(data_root, 'Anno/shop.txt'),
+        id_file=os.path.join(data_root, 'Anno/shop_id.txt'),
+        label_file=os.path.join(data_root, 'Anno/list_attr_items.txt'),
+        bbox_file=os.path.join(data_root, 'Anno/list_bbox_shop.txt'),
+        landmark_file=os.path.join(data_root, 'Anno/list_landmarks_shop.txt'),
         img_size=img_size,
-        roi_plane_size=7,
-        retrieve=retrieve,
-        find_three=False,
-        idx2id=os.path.join(data_root, 'Anno/gallery_idx2id.txt')))
+        find_three=True))
 
 # optimizer
 optimizer = dict(type='SGD', lr=1e-3, momentum=0.9)
@@ -105,11 +109,10 @@ log_config = dict(
 
 start_epoch = 0
 total_epochs = 100
-gpus = dict(train=[0, 1, 2, 3], test=[0])
-work_dir = 'checkpoint/Retrieve/vgg/roi/no_attr'
-print_interval = 20  # interval to print information
-resume_from = None
+gpus = dict(train=[0, 1, 2], test=[0])
+work_dir = 'checkpoint/Retrieve_Consumer_to_Shop/vgg/roi'
 load_from = None
+resume_from = None
 init_weights_from = 'checkpoint/vgg16.pth'
 workflow = [('train', 100)]
 dist_params = dict(backend='nccl')

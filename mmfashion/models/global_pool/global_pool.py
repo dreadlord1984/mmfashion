@@ -1,6 +1,5 @@
 from __future__ import division
 
-import torch
 import torch.nn as nn
 
 from ..registry import GLOBALPOOLING
@@ -15,14 +14,17 @@ class GlobalPooling(nn.Module):
 
         inter_plane = inter_channels[0] * inplanes[0] * inplanes[1]
 
-        self.global_layers = nn.Sequential(
-            nn.Linear(inter_plane, inter_channels[1]),
-            nn.ReLU(True),
-            nn.Dropout(),
-            nn.Linear(inter_channels[1], outchannels),
-            nn.ReLU(True),
-            nn.Dropout(),
-        )
+        if len(inter_channels) > 1:
+            self.global_layers = nn.Sequential(
+                nn.Linear(inter_plane, inter_channels[1]),
+                nn.ReLU(True),
+                nn.Dropout(),
+                nn.Linear(inter_channels[1], outchannels),
+                nn.ReLU(True),
+                nn.Dropout(),
+            )
+        else:  # just one linear layer
+            self.global_layers = nn.Linear(inter_plane, outchannels)
 
     def forward(self, x):
         x = self.avgpool(x)
@@ -31,11 +33,13 @@ class GlobalPooling(nn.Module):
         return global_pool
 
     def init_weights(self):
-        if isinstance(self.global_layers, nn.Sequential):
+        if isinstance(self.global_layers, nn.Linear):
+            nn.init.normal_(self.global_layers.weight, 0, 0.01)
+            if self.global_layers.bias is not None:
+                nn.init.constant_(self.global_layers.bias, 0)
+        elif isinstance(self.global_layers, nn.Sequential):
             for m in self.global_layers:
                 if type(m) == nn.Linear:
-                    nn.init.xavier_uniform_(m.weight)
+                    nn.init.normal_(m.weight, 0, 0.01)
                     if m.bias is not None:
-                        m.bias.data.fill_(0.01)
-        else:
-            self.global_layers.init_weights()
+                        nn.init.constant_(m.bias, 0)

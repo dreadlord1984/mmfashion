@@ -1,34 +1,15 @@
 from __future__ import division
-from functools import partial
+import os
 
-import shutil
-import time
-import logging
-
+import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.parallel
-import torch.backends.cudnn as cudnn
 import torch.optim
 import torch.utils.data
-from torch.utils.data.dataset import Dataset
 import torchvision.transforms as transforms
-import torchvision.datasets as datasets
-import torchvision.models as models
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
-
-from mmcv.runner import get_dist_info
-from mmcv.parallel import collate
-
-import os
-import sys
-import random
-from skimage import io
 from PIL import Image
-import numpy as np
+from torch.utils.data.dataset import Dataset
 
-from .loader import GroupSampler, DistributedGroupSampler, DistributedSampler
 from .registry import DATASETS
 
 
@@ -86,7 +67,6 @@ class AttrDataset(Dataset):
             self.landmarks = None
 
     def get_basic_item(self, idx):
-        imgname = self.img_list[idx]
         img = Image.open(os.path.join(self.img_path,
                                       self.img_list[idx])).convert('RGB')
 
@@ -111,17 +91,22 @@ class AttrDataset(Dataset):
 
         landmark = []
         # compute the shiftness
-        origin_landmark = self.landmarks[idx]
-        for i, l in enumerate(origin_landmark):
-            if i % 2 == 0:  # x
-                l_x = max(0, l - x1)
-                l_x = float(l_x) / bbox_w * self.img_size[0]
-                landmark.append(l_x)
-            else:  # y
-                l_y = max(0, l - y1)
-                l_y = float(l_y) / bbox_h * self.img_size[1]
-                landmark.append(l_y)
-        landmark = torch.from_numpy(np.array(landmark)).float()
+        if self.landmarks is not None:
+            origin_landmark = self.landmarks[idx]
+            for i, l in enumerate(origin_landmark):
+                if i % 2 == 0:  # x
+                    l_x = max(0, l - x1)
+                    l_x = float(l_x) / bbox_w * self.img_size[0]
+                    landmark.append(l_x)
+                else:  # y
+                    l_y = max(0, l - y1)
+                    l_y = float(l_y) / bbox_h * self.img_size[1]
+                    landmark.append(l_y)
+            landmark = torch.from_numpy(np.array(landmark)).float()
+        else:
+            # here no landmark will be used, just use zero for initialization
+            # (global predictor)
+            landmark = torch.zeros(8)
         data = {'img': img, 'attr': label, 'cate': cate, 'landmark': landmark}
         return data
 

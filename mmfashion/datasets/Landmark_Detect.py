@@ -1,34 +1,15 @@
 from __future__ import division
-from functools import partial
+import os
 
-import shutil
-import time
-import logging
-
+import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.parallel
-import torch.backends.cudnn as cudnn
 import torch.optim
 import torch.utils.data
-from torch.utils.data.dataset import Dataset
 import torchvision.transforms as transforms
-import torchvision.datasets as datasets
-import torchvision.models as models
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
-
-from mmcv.runner import get_dist_info
-from mmcv.parallel import collate
-
-import os
-import sys
-import random
-from skimage import io
 from PIL import Image
-import numpy as np
+from torch.utils.data.dataset import Dataset
 
-from .loader import GroupSampler, DistributedGroupSampler, DistributedSampler
 from .registry import DATASETS
 
 
@@ -130,12 +111,6 @@ class LandmarkDetectDataset(Dataset):
         landmark_for_roi_pool = torch.from_numpy(
             np.array(landmark_for_roi_pool)).float()
         vis = torch.from_numpy(np.array(vis)).float()
-
-        # load attribute
-        if self.attributes is not None:
-            attr = self.attributes[idx]
-        else:
-            attr = None
 
         data = {
             'img': img,

@@ -1,13 +1,8 @@
 from __future__ import division
 import os
-import os.path as osp
-import pkgutil
-import time
 from collections import OrderedDict
-from importlib import import_module
 
 import torch
-import torch.nn as nn
 
 
 def save_checkpoint(cfg, epoch, model, optimizer):
@@ -15,11 +10,12 @@ def save_checkpoint(cfg, epoch, model, optimizer):
         os.makedirs(cfg.work_dir)
     ckpt_path = os.path.join(
         cfg.work_dir, '%s_%s_epoch%d.pth.tar' % (cfg.arch, cfg.pooling, epoch))
-    torch.save({
-        'epoch': epoch,
-        'model_state_dict': model.state_dict(),
-        'optimizer_state_dict': optimizer.state_dict(),
-    }, ckpt_path)
+    torch.save(
+        {
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+        }, ckpt_path)
 
     print('Attribute Predictor saved in %s' % ckpt_path)
 
@@ -51,7 +47,6 @@ def load_checkpoint(filename, model, strict=False, logger=None):
 def init_weights_from(init_from, model):
     # resume from ImageNet pretrained weights for backbone
     load_state_dict(model.backbone, torch.load(init_from))
-
     return model
 
 

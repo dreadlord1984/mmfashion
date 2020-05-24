@@ -8,7 +8,7 @@ img_size = (224, 224)
 
 model = dict(
     type='RoIPredictor',
-    backbone=dict(type='Vgg'),
+    backbone=dict(type='Vgg', layer_setting='vgg16'),
     global_pool=dict(
         type='GlobalPooling',
         inplanes=(7, 7),
@@ -63,6 +63,7 @@ data = dict(
         cate_file=os.path.join(data_root, 'Anno/test_cate.txt'),
         bbox_file=os.path.join(data_root, 'Anno/test_bbox.txt'),
         landmark_file=os.path.join(data_root, 'Anno/test_landmarks.txt'),
+        attr_cloth_file=os.path.join(data_root, 'Anno/list_attr_cloth.txt'),
         img_size=img_size),
     val=dict(
         type=dataset_type,

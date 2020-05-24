@@ -1,20 +1,17 @@
 from __future__ import division
 import argparse
 
-import torch
-import torch.nn as nn
-
 from mmcv import Config
 from mmcv.runner import load_checkpoint
 
-from mmfashion.apis import (init_dist, get_root_logger, test_retriever)
+from mmfashion.apis import get_root_logger, init_dist, test_retriever
 from mmfashion.datasets import build_dataset
 from mmfashion.models import build_retriever
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='Test a Fashion Attribute Predictor')
+        description='Test a In-shop Fashion Retriever')
     parser.add_argument(
         '--config',
         help='train config file path',
@@ -23,7 +20,7 @@ def parse_args():
     parser.add_argument(
         '--checkpoint',
         type=str,
-        default='checkpoint/Retrieve/vgg/latest.pth',
+        default='checkpoint/Retrieve/vgg/global/epoch_100.pth',
         help='the checkpoint file to resume from')
     parser.add_argument(
         '--validate',
@@ -70,7 +67,7 @@ def main():
     model = build_retriever(cfg.model)
     print('model built')
 
-    checkpoint = load_checkpoint(model, cfg.load_from, map_location='cpu')
+    load_checkpoint(model, cfg.load_from)
     print('load checkpoint from: {}'.format(cfg.load_from))
 
     # test

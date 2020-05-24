@@ -1,13 +1,13 @@
 import os
 
-#model setting
+# model setting
 arch = 'resnet'
 landmark_num = 8
 img_size = (224, 224)
 
 model = dict(
     type='LandmarkDetector',
-    backbone=dict(type='ResNet'),
+    backbone=dict(type='ResNet', layer_setting='resnet50'),
     global_pool=dict(
         type='GlobalPooling',
         inplanes=(7, 7),
@@ -41,7 +41,7 @@ model = dict(
 
 # dataset settings
 dataset_type = 'Landmark_Detect'
-data_root = '../data/Landmark_Detect'
+data_root = 'data/Landmark_Detect'
 img_norm = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 data = dict(
     imgs_per_gpu=32,

@@ -1,6 +1,4 @@
 import numpy as np
-import scipy.io as sio
-from scipy.spatial.distance import cdist as cdist
 from scipy.spatial.distance import cosine as cosine
 
 
@@ -9,14 +7,18 @@ class Evaluator(object):
     def __init__(self,
                  query_dict_fn,
                  gallery_dict_fn,
-                 topks=[3, 5, 10],
+                 topks=[3, 5, 10, 20, 30, 50],
                  extract_feature=False):
-        """ create the empty array to count
+        """Create the empty array to count
+
         Args:
-        query_dict_fn(dict) : the mapping of the index to the id of each query_embed
-        gallery_dict_fn(dict): the mapping of the index to the id of each gallery_embed
-        tops_type(int) : default retrieve top3, top5
-        extract_feature(bool) : whether to save extracted garment feature or not
+            query_dict_fn(dict): the mapping of the index to the id of each
+                query_embed.
+            gallery_dict_fn(dict): the mapping of the index to the id of each
+                gallery_embed.
+            tops_type(int): default retrieve top3, top5.
+            extract_feature(bool): whether to save extracted garment feature
+                or not.
         """
 
         self.topks = topks
@@ -58,8 +60,9 @@ class Evaluator(object):
         query_dist = np.array(query_dist)
 
         order = np.argsort(query_dist)
-
         single_recall = dict()
+
+        print(self.query_id2idx[query_id])
         for k in self.topks:
             retrieved_idxes = order[:k]
             tp = 0
@@ -89,6 +92,23 @@ class Evaluator(object):
             self.show_results()
 
         self.show_results()
+
+    def show_retrieved_images(self, query_feat, gallery_embeds):
+        query_dist = []
+
+        for i, feat in enumerate(gallery_embeds):
+            cosine_dist = cosine(
+                feat.reshape(1, -1), query_feat.reshape(1, -1))
+            query_dist.append(cosine_dist)
+
+        query_dist = np.array(query_dist)
+        order = np.argsort(query_dist)
+
+        for k in self.topks:
+            retrieved_idxes = order[:k]
+            for idx in retrieved_idxes:
+                retrieved_id = self.gallery_dict[idx]
+                print('retrieved id', retrieved_id)
 
     def get_id_dict(self, id_file):
         ids = []

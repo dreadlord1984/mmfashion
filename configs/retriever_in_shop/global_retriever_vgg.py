@@ -3,12 +3,12 @@ import os
 # model settings
 arch = 'vgg'
 retrieve = True
-attr_num = 463
+attribute_num = 463
 id_num = 7982
 img_size = (224, 224)
 model = dict(
     type='GlobalRetriever',
-    backbone=dict(type='Vgg'),
+    backbone=dict(type='Vgg', layer_setting='vgg16'),
     global_pool=dict(
         type='GlobalPooling',
         inplanes=(7, 7),
@@ -20,17 +20,28 @@ model = dict(
         inchannels=4096,
         inter_channels=[256, id_num],
         loss_id=dict(type='CELoss', ratio=1),
-        loss_triplet=None),
-    attr_predictor=None,
+        loss_triplet=dict(type='TripletLoss', method='cosine', margin=0.)),
+    attr_predictor=dict(
+        type='AttrPredictor',
+        inchannels=4096,
+        outchannels=attribute_num,
+        loss_attr=dict(
+            type='BCEWithLogitsLoss',
+            ratio=1,
+            weight=None,
+            size_average=None,
+            reduce=None,
+            reduction='mean')),
     pretrained='checkpoint/vgg16.pth')
 
 pooling = 'Global'
+
 # extract_feature or not
 extract_feature = False
 
 # dataset settings
 dataset_type = 'InShopDataset'
-data_root = '../data/In-shop'
+data_root = 'data/In-shop'
 img_norm = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 data = dict(
@@ -59,8 +70,7 @@ data = dict(
         img_size=img_size,
         roi_plane_size=7,
         retrieve=retrieve,
-        find_three=False,
-        idx2id=os.path.join(data_root, 'Anno/query_idx2id.txt')),
+        find_three=False),
     gallery=dict(
         type=dataset_type,
         img_path=os.path.join(data_root, 'Img'),
@@ -72,8 +82,7 @@ data = dict(
         img_size=img_size,
         roi_plane_size=7,
         retrieve=retrieve,
-        find_three=False,
-        idx2id=os.path.join(data_root, 'Anno/gallery_idx2id.txt')))
+        find_three=False))
 
 # optimizer
 optimizer = dict(type='SGD', lr=1e-3, momentum=0.9)
@@ -96,7 +105,7 @@ log_config = dict(
 start_epoch = 0
 total_epochs = 100
 gpus = dict(train=[0, 1, 2, 3], test=[0])
-work_dir = 'checkpoint/Retrieve/vgg/global/no_attr_no_triplet'
+work_dir = 'checkpoint/Retrieve/vgg/global/with_attr/'
 print_interval = 20  # interval to print information
 resume_from = None
 load_from = None

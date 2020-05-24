@@ -1,8 +1,4 @@
-import logging
-
-import torch
 import torch.nn as nn
-
 from mmcv.runner import load_checkpoint
 
 from ..registry import BACKBONES
@@ -17,9 +13,13 @@ class Vgg(nn.Module):
         ],
     }
 
-    def __init__(self, batch_norm=False, init_weights=False):
+    def __init__(self,
+                 layer_setting='vgg16',
+                 batch_norm=False,
+                 init_weights=False):
         super(Vgg, self).__init__()
-        self.features = self._make_layers(self.setting['vgg16'], batch_norm)
+        self.features = self._make_layers(self.setting[layer_setting],
+                                          batch_norm)
 
         if init_weights:
             self._initialize_weights()
@@ -50,7 +50,6 @@ class Vgg(nn.Module):
     def init_weights(self, pretrained=None):
         print('pretrained model', pretrained)
         if isinstance(pretrained, str):
-            logger = logging.getLogger()
             load_checkpoint(self, pretrained)
         elif pretrained is None:
             for m in self.modules():

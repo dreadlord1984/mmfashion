@@ -7,33 +7,34 @@ attribute_num = 463
 id_num = 7982
 img_size = (224, 224)
 model = dict(
-    type='RoIRetriever',
-    backbone=dict(type='ResNet'),
+    type='GlobalRetriever',
+    backbone=dict(type='ResNet', setting='resnet50'),
     global_pool=dict(
         type='GlobalPooling',
         inplanes=(7, 7),
         pool_plane=(2, 2),
         inter_channels=[2048, 4096],
         outchannels=4096),
-    roi_pool=dict(
-        type='RoIPooling',
-        pool_plane=(2, 2),
-        inter_channels=2048,
-        outchannels=4096,
-        crop_size=7,
-        img_size=img_size,
-        num_lms=8),
-    concat=dict(type='Concat', inchannels=2 * 4096, outchannels=4096),
     embed_extractor=dict(
         type='EmbedExtractor',
         inchannels=4096,
         inter_channels=[256, id_num],
         loss_id=dict(type='CELoss', ratio=1),
         loss_triplet=dict(type='TripletLoss', method='cosine', margin=0.)),
-    attr_predictor=None,
+    attr_predictor=dict(
+        type='AttrPredictor',
+        inchannels=4096,
+        outchannels=attribute_num,
+        loss_attr=dict(
+            type='BCEWithLogitsLoss',
+            ratio=1,
+            weight=None,
+            size_average=None,
+            reduce=None,
+            reduction='mean')),
     pretrained='checkpoint/resnet50.pth')
 
-pooling = 'RoI'
+pooling = 'Global'
 
 # extract_feature or not
 extract_feature = False
@@ -45,7 +46,7 @@ img_norm = dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
 data = dict(
     imgs_per_gpu=16,
-    workers_per_gpu=4,
+    workers_per_gpu=1,
     train=dict(
         type=dataset_type,
         img_path=os.path.join(data_root, 'Img'),
@@ -54,7 +55,7 @@ data = dict(
         id_file=os.path.join(data_root, 'Anno/train_id.txt'),
         bbox_file=os.path.join(data_root, 'Anno/train_bbox.txt'),
         landmark_file=os.path.join(data_root, 'Anno/train_landmarks.txt'),
-        img_size=img_size,
+        img_size=(224, 224),
         roi_plane_size=7,
         retrieve=retrieve,
         find_three=True),
@@ -66,24 +67,22 @@ data = dict(
         id_file=os.path.join(data_root, 'Anno/query_id.txt'),
         bbox_file=os.path.join(data_root, 'Anno/query_bbox.txt'),
         landmark_file=os.path.join(data_root, 'Anno/query_landmarks.txt'),
-        img_size=img_size,
+        img_size=(224, 224),
         roi_plane_size=7,
         retrieve=retrieve,
-        find_three=retrieve,
-        idx2id=os.path.join(data_root, 'Anno/query_idx2id.txt')),
+        find_three=retrieve),
     gallery=dict(
         type=dataset_type,
         img_path=os.path.join(data_root, 'Img'),
         img_file=os.path.join(data_root, 'Anno/gallery_img.txt'),
-        label_file=os.path.join(data_root, 'Anno/gallery_labels.txt'),
         id_file=os.path.join(data_root, 'Anno/gallery_id.txt'),
+        label_file=os.path.join(data_root, 'Anno/gallery_labels.txt'),
         bbox_file=os.path.join(data_root, 'Anno/gallery_bbox.txt'),
         landmark_file=os.path.join(data_root, 'Anno/gallery_landmarks.txt'),
-        img_size=img_size,
+        img_size=(224, 224),
         roi_plane_size=7,
         retrieve=retrieve,
-        find_three=retrieve,
-        idx2id=os.path.join(data_root, 'Anno/gallery_idx2id.txt')))
+        find_three=retrieve))
 
 # optimizer
 optimizer = dict(type='SGD', lr=1e-3, momentum=0.9)
@@ -103,12 +102,12 @@ log_config = dict(
         dict(type='TextLoggerHook'),
     ])
 
-start_epoch = 101
-total_epochs = 180
+start_epoch = 0
+total_epochs = 100
 gpus = dict(train=[0, 1, 2, 3], test=[0])
-work_dir = 'checkpoint/Retrieve/resnet/roi/no_attr/'
-print_interval = 20
-resume_from = 'checkpoint/Predict/resnet/roi/no_attr/latest.pth'
+work_dir = 'checkpoint/Retrieve/resnet/global'
+print_interval = 20  # interval to print information
+resume_from = None
 load_from = None
 init_weights_from = 'checkpoint/resnet50.pth'
 workflow = [('train', 100)]

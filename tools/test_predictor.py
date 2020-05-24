@@ -1,23 +1,20 @@
 from __future__ import division
 import argparse
 
-import torch
-import torch.nn as nn
-
 from mmcv import Config
 from mmcv.runner import load_checkpoint
 
-from mmfashion.apis import (init_dist, get_root_logger, test_predictor)
+from mmfashion.apis import get_root_logger, init_dist, test_predictor
 from mmfashion.datasets.utils import get_dataset
 from mmfashion.models import build_predictor
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='Train a Fashion Attribute Predictor')
+        description='Test a Fashion Attribute Predictor')
     parser.add_argument(
         '--config',
-        help='train config file path',
+        help='test config file path',
         default='configs/attribute_predict/roi_predictor_vgg_attr.py')
     parser.add_argument('--work_dir', help='the dir to save logs and models')
     parser.add_argument(
@@ -64,7 +61,7 @@ def main():
     model = build_predictor(cfg.model)
     print('model built')
 
-    checkpoint = load_checkpoint(model, cfg.load_from, map_location='cpu')
+    load_checkpoint(model, cfg.load_from, map_location='cpu')
     print('load checkpoint from: {}'.format(cfg.load_from))
 
     # test

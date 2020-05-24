@@ -1,10 +1,11 @@
 import mmcv
 from torch import nn
 
-from .registry import (BACKBONES, GLOBALPOOLING, ROIPOOLING, CONCATS,
-                       EMBEDEXTRACTOR, ATTRPREDICTOR, PREDICTOR, RETRIEVER,
-                       LANDMARKFEATUREEXTRACTOR, VISIBILITYCLASSIFIER,
-                       LANDMARKREGRESSION, LANDMARKDETECTOR, LOSSES)
+from .registry import (ATTRPREDICTOR, BACKBONES, CONCATS, EMBEDEXTRACTOR,
+                       GLOBALPOOLING, LANDMARKDETECTOR,
+                       LANDMARKFEATUREEXTRACTOR, LANDMARKREGRESSION, LOSSES,
+                       PREDICTOR, RECOMMENDER, RETRIEVER, ROIPOOLING,
+                       TRIPLETNET, TYPESPECIFICNET, VISIBILITYCLASSIFIER)
 
 
 def _build_module(cfg, registry, default_args):
@@ -29,7 +30,7 @@ def _build_module(cfg, registry, default_args):
 def build(cfg, registry, default_args=None):
     if isinstance(cfg, list):
         modules = [_build_module(cfg_, registry, default_args) for cfg_ in cfg]
-        return nn.Sequential(*module)
+        return nn.Sequential(*modules)
     else:
         return _build_module(cfg, registry, default_args)
 
@@ -84,3 +85,15 @@ def build_predictor(cfg):
 
 def build_retriever(cfg):
     return build(cfg, RETRIEVER)
+
+
+def build_type_specific_net(cfg):
+    return build(cfg, TYPESPECIFICNET)
+
+
+def build_triplet_net(cfg):
+    return build(cfg, TRIPLETNET)
+
+
+def build_fashion_recommender(cfg):
+    return build(cfg, RECOMMENDER)

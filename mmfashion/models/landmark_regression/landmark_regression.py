@@ -1,6 +1,4 @@
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from ..builder import build_loss
 from ..registry import LANDMARKREGRESSION
@@ -23,13 +21,9 @@ class LandmarkRegression(nn.Module):
     def forward_train(self, x, pred_vis, vis, landmark):
         pred_lm = self.linear(x).view(-1, self.landmark_num, 2)
         pred_vis = pred_vis.view(-1, self.landmark_num, 1)
-
         landmark = landmark.view(-1, self.landmark_num, 2)
         vis = vis.view(-1, self.landmark_num, 1)
-
         loss_regress = self.loss_regress(vis * pred_lm, vis * landmark)
-
-        loss_regress_mean = torch.mean(loss_regress)
         return loss_regress
 
     def forward_test(self, x):

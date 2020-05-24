@@ -1,23 +1,10 @@
 from __future__ import division
 
-import os
-import os.path as osp
-import re
-from collections import OrderedDict
+from mmcv.parallel import MMDataParallel
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-from torch.autograd import Variable
-import torchvision
-
-from mmcv.runner import Runner, DistSamplerSeedHook, obj_from_dict
-from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-
-from .env import get_root_logger
 from ..core import LandmarkDetectorEvaluator
 from ..datasets import build_dataloader
+from .env import get_root_logger
 
 
 def test_landmark_detector(model,
@@ -62,14 +49,17 @@ def _non_dist_test(model, dataset, cfg, validate=False):
         det_error, det_lm_percent = evaluator.evaluate_landmark_detection(
             pred_vis, pred_lm, vis, landmark)
         if batch_idx % 20 == 0:
-            print(
-                'Batch idx {:d}, normalized error = {:.4f}, det. percent = {:.2f}'
-                .format(batch_idx, det_error, det_lm_percent))
+            print('Batch idx {:d}, normalized error = {:.4f}, '
+                  'det. percent = {:.2f}'.format(batch_idx, det_error,
+                                                 det_lm_percent))
             error_list.append(det_error)
             det_percent_list.append(det_lm_percent)
 
-    print(
-        'Fashion Landmark Detection Normalized Error: {:.4f}, Detected Percent: {:.2f}'
-        .format(
-            sum(error_list) / len(error_list),
-            sum(det_percent_list) / len(det_percent_list)))
+    print('Fashion Landmark Detection Normalized Error: {:.4f}, '
+          'Detected Percent: {:.2f}'.format(
+              sum(error_list) / len(error_list),
+              sum(det_percent_list) / len(det_percent_list)))
+
+
+def _dist_test(model, dataset, cfg, validate=False):
+    raise NotImplementedError

@@ -1,6 +1,3 @@
-import logging
-
-import torch
 import torch.nn as nn
 from mmcv.runner import load_checkpoint
 
@@ -47,7 +44,8 @@ class BasicBlock(nn.Module):
         if dilation > 1:
             raise NotImplementedError(
                 "Dilation > 1 not supported in BasicBlock")
-        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        # Both self.conv1 and self.downsample layers
+        # downsample the input when stride != 1
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = norm_layer(planes)
         self.relu = nn.ReLU(inplace=True)
@@ -62,16 +60,13 @@ class BasicBlock(nn.Module):
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
-
         out = self.conv2(out)
         out = self.bn2(out)
 
         if self.downsample is not None:
             identity = self.downsample(x)
-
         out += identity
         out = self.relu(out)
-
         return out
 
 
@@ -91,7 +86,8 @@ class Bottleneck(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         width = int(planes * (base_width / 64.)) * groups
-        # Both self.conv2 and self.downsample layers downsample the input when stride != 1
+        # Both self.conv2 and self.downsample layers
+        # downsample the input when stride != 1
         self.conv1 = conv1x1(inplanes, width)
         self.bn1 = norm_layer(width)
         self.conv2 = conv3x3(width, width, stride, groups, dilation)
@@ -127,17 +123,29 @@ class Bottleneck(nn.Module):
 
 @BACKBONES.register_module
 class ResNet(nn.Module):
-    setting = {'resnet50': [3, 4, 6, 3]}
+    layer_setting = {
+        'resnet50': [3, 4, 6, 3],
+        'resnet18': [2, 2, 2, 2],
+        'resnet34': [3, 4, 6, 3]
+    }
+
+    block_setting = {
+        'resnet18': BasicBlock,
+        'resnet34': BasicBlock,
+        'resnet50': Bottleneck
+    }
 
     def __init__(self,
+                 setting='resnet50',
                  zero_init_residual=False,
                  groups=1,
                  width_per_group=64,
                  replace_stride_with_dilation=None,
                  norm_layer=None):
+
         super(ResNet, self).__init__()
-        block = Bottleneck
-        layers = self.setting['resnet50']
+        block = self.block_setting[setting]
+        layers = self.layer_setting[setting]
 
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
@@ -180,10 +188,11 @@ class ResNet(nn.Module):
             stride=2,
             dilate=replace_stride_with_dilation[2])
 
+        self.zero_init_residual = zero_init_residual
+
     def init_weights(self, pretrained=None):
         print('pretrained model', pretrained)
         if isinstance(pretrained, str):
-            logger = logging.getLogger()
             load_checkpoint(self, pretrained)
         elif pretrained is None:
             for m in self.modules():
@@ -194,10 +203,11 @@ class ResNet(nn.Module):
                     nn.init.constant_(m.weight, 1)
                     nn.init.constant_(m.bias, 0)
 
-            # Zero-initialize the last BN in each residual branch,
-            # so that the residual branch starts with zeros, and each residual block behaves like an identity.
-            # This improves the model by 0.2~0.3% according to https://arxiv.org/abs/1706.02677
-            if zero_init_residual:
+            # Zero-initialize the last BN in each residual branch, so that the
+            # residual branch starts with zeros, and each residual block
+            # behaves like an identity. This improves the model by 0.2~0.3%
+            # according to https://arxiv.org/abs/1706.02677
+            if self.zero_init_residual:
                 for m in self.modules():
                     if isinstance(m, Bottleneck):
                         nn.init.constant_(m.bn3.weight, 0)
@@ -241,10 +251,7 @@ class ResNet(nn.Module):
         x = self.maxpool(x)
 
         x = self.layer1(x)
-
         x = self.layer2(x)
-
         x = self.layer3(x)
-
         x = self.layer4(x)
         return x

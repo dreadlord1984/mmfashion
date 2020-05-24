@@ -1,23 +1,10 @@
 from __future__ import division
 
-import os
-import os.path as osp
-import re
-from collections import OrderedDict
+from mmcv.parallel import MMDataParallel
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-from torch.autograd import Variable
-import torchvision
-
-from mmcv.runner import Runner, DistSamplerSeedHook, obj_from_dict
-from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-
-from .env import get_root_logger
-from ..core import AttrCalculator, CateCalculator
+from ..core import AttrCalculator
 from ..datasets import build_dataloader
+from .env import get_root_logger
 
 
 def test_predictor(model,
@@ -65,3 +52,7 @@ def _non_dist_test(model, dataset, cfg, validate=False):
             attr_calculator.show_result(batch_idx)
 
     attr_calculator.show_result()
+
+
+def _dist_test(model, dataset, cfg, validate=False):
+    raise NotImplementedError

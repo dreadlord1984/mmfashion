@@ -3,11 +3,11 @@ import os
 # model settings
 arch = 'resnet'
 retrieve = False
-class_num = 463
+attribute_num = 463
 img_size = (224, 224)
 model = dict(
     type='RoIPredictor',
-    backbone=dict(type='ResNet'),
+    backbone=dict(type='ResNet', setting='resnet50'),
     global_pool=dict(
         type='GlobalPooling',
         inplanes=(7, 7),
@@ -55,8 +55,8 @@ data = dict(
         landmark_file=os.path.join(data_root, 'Anno/train_landmarks.txt'),
         img_size=img_size,
         retrieve=retrieve,
-        find_three=
-        retrieve  # if retrieve, then find three items: anchor, pos, neg
+        find_three=retrieve
+        # if retrieve, then find three items: anchor, pos, neg
     ),
     test=dict(
         type=dataset_type,
@@ -65,6 +65,7 @@ data = dict(
         label_file=os.path.join(data_root, 'Anno/test_labels.txt'),
         bbox_file=os.path.join(data_root, 'Anno/test_bbox.txt'),
         landmark_file=os.path.join(data_root, 'Anno/test_landmarks.txt'),
+        attr_cloth_file=os.path.join(data_root, 'Anno/list_attr_cloth.txt'),
         img_size=img_size,
         retrieve=retrieve,
         find_three=retrieve),

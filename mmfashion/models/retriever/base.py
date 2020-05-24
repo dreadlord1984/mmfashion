@@ -1,14 +1,11 @@
 import logging
 from abc import ABCMeta, abstractmethod
 
-import mmcv
-import numpy as np
-import torch
 import torch.nn as nn
 
 
 class BaseRetriever(nn.Module):
-    ''' Base class for attribute predictors'''
+    ''' Base class for fashion retriever'''
     __metaclass__ = ABCMeta
 
     def __init__(self):
@@ -29,7 +26,7 @@ class BaseRetriever(nn.Module):
     def forward_test(self, imgs, landmarks):
         num_augs = len(imgs)
         if num_augs == 1:  # single image test
-            return self.simple_test(imgs[0], landmarks[0])
+            return self.simple_test(imgs, landmarks)
         else:
             return self.aug_test(imgs, landmarks)
 

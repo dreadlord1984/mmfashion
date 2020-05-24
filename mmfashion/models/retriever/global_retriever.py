@@ -1,11 +1,6 @@
-import logging
-
-import torch
-import torch.nn as nn
-
-from .base import BaseRetriever
 from .. import builder
 from ..registry import RETRIEVER
+from .base import BaseRetriever
 
 
 @RETRIEVER.register_module
@@ -77,7 +72,6 @@ class GlobalRetriever(BaseRetriever):
 
     def simple_test(self, x, landmarks=None):
         """Test single image"""
-        x = x.unsqueeze(0)
         feat = self.extract_feat(x)
         embed = self.embed_extractor.forward_test(feat)[0]
         return embed

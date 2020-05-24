@@ -1,13 +1,10 @@
 from __future__ import division
 import argparse
 
-import torch
-import torch.nn as nn
-
 from mmcv import Config
 from mmcv.runner import load_checkpoint
 
-from mmfashion.apis import (init_dist, get_root_logger, test_landmark_detector)
+from mmfashion.apis import get_root_logger, init_dist, test_landmark_detector
 from mmfashion.datasets import get_dataset
 from mmfashion.models import build_landmark_detector
 
@@ -67,7 +64,7 @@ def main():
     model = build_landmark_detector(cfg.model)
     print('model built')
 
-    checkpoint = load_checkpoint(model, cfg.load_from, map_location='cpu')
+    load_checkpoint(model, cfg.load_from, map_location='cpu')
     print('load checkpoint from: {}'.format(cfg.load_from))
 
     # test
